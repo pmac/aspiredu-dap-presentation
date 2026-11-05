@@ -25,7 +25,7 @@
 				>
 					<textarea data-template>
 # Canvas DAP
-### How AspirEDU gets Canvas data in bulk
+### How AspirEDU gets Canvas data<br>in bulk
 
 Paul McLanahan · AspirEDU
 
@@ -46,19 +46,23 @@ Paul McLanahan · AspirEDU
 
 - Every night we ask Canvas for each school's data
 - We use the **Canvas API** — one question at a time
-  - "Give me the courses" → "Give me this course's assignments" → "Give me the submissions for this assignment" …
+  - "Give me the courses" →
+    - "Give me the course assignments" →
+      - "Give me the assignment submissions" →
+        - etc.
 - Big schools mean **millions** of questions
 
 Note: Analogy: the API is like asking a librarian for books one at a time. It works, but it's slow when you need the whole library.
 
 --
 
-## The trouble with one-at-a-time
+## The trouble with API
 
 - Canvas limits how fast we can ask (rate limits)
 - Submissions are the biggest and slowest piece
 - Large schools can take many hours every night
 - More load on the school's Canvas instance
+- More 💸 from us: They charge for API per-request
 
 ---
 
@@ -79,16 +83,17 @@ Note: Docs: https://developerdocs.instructure.com/services/dap
 
 | | Canvas API | DAP |
 |---|---|---|
-| Shape | One record / page at a time | Whole table as files |
-| Speed for big data | Slow | Fast |
-| Freshness | Live | Updated every few hours |
-| Setup | API token / developer key | DAP client ID + secret |
+| ***Shape*** | One record / page at a time | Whole table as files |
+| ***Speed for big data*** | Slow | Fast |
+| ***Freshness*** | Live | Updated every few hours |
+| ***Setup*** | API token / developer key | DAP client ID + secret |
 
 --
 
 ## "Only what changed"
 
 - The first request gets **everything** (a snapshot)
+  - We only do this if we really need to
 - After that we say: *"give me what changed **since** last time"*
 - We remember the timestamp for each table
 - Nightly downloads stay small, even at large schools
@@ -101,7 +106,7 @@ Note: Docs: https://developerdocs.instructure.com/services/dap
 |---|---|
 | **Submissions** | `submissions`, `submission_comments` |
 | **Communication channels** (emails, SMS) | `communication_channels` |
-| **Groups & differentiation tags** | `group_categories`, `groups`, `group_memberships` |
+| **Groups & differentiation tags** (new!) | `groups`, `group_categories`, `group_memberships` |
 
 Everything else still comes from the Canvas API.
 
@@ -116,11 +121,13 @@ Note: Each of these can be turned on independently per school. When a table is o
 3. **DAP step** — download and process enabled tables
 4. Capture finishes, reports update
 
-The DAP runs **last** so it can match its rows to every course we just captured.
+The DAP runs ***last*** so it can match its rows to every course we just captured.
 
 ---
 
-## Under the hood (in plain terms)
+## Under the hood
+
+#### (in plain terms)
 
 1. **Ask** Instructure for a table's changes since last time
 2. **Wait** while they build the files (we check every 10 seconds)
@@ -150,11 +157,17 @@ Note: A single submissions table at a large school can take hours. The checkpoin
 - ✅ Same data in AspirEDU reports — just delivered differently
 - 🔁 Fewer failed or partial captures
 
+--
+
+## What it means for us
+
+![MONEY](/img/scrooge-mcduck.gif)
+
 ---
 
 ## Setting it up
 
-1. School's Canvas admin creates **DAP credentials**
+1. School's Canvas admin (or BRM) creates **DAP credentials**
    (Admin → Data Services / Instructure Identity Services)
 2. They share the **Client ID** and **Client Secret** with us
 3. We enter them on the school's **Canvas DAP Config**
@@ -187,7 +200,7 @@ Note: The automatic test checks access to each table, so a typo or missing permi
 
 **Learn more**
 - Instructure DAP docs: developerdocs.instructure.com/services/dap
-- Internal: *Canvas DAP Flow* (AspirEDU docs)
+- Internal: *Canvas DAP Flow* (AspirEDU developer docs)
 					</textarea>
 				</section>
 			</div>
