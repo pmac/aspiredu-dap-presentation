@@ -7,7 +7,7 @@
 			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
 		/>
 
-		<title>reveal.js</title>
+		<title>Canvas DAP at AspirEDU</title>
 
 		<link rel="stylesheet" href="dist/reset.css" />
 		<link rel="stylesheet" href="dist/reveal.css" />
@@ -19,22 +19,175 @@
 	<body>
 		<div class="reveal">
 			<div class="slides">
-				<!-- slide 1 -->
-				<section data-markdown>
+				<section
+					data-markdown
+					data-separator-vertical="^\r?\n--\r?\n$"
+				>
 					<textarea data-template>
-						## Slide 1
+# Canvas DAP
+### How AspirEDU gets Canvas data in bulk
 
-						- The
-						- DAP
-						- RULES
+Paul McLanahan · AspirEDU
 
-						---
+---
 
-						## Slide 2
+## Agenda
 
-						- The
-						- DAP
-						- RULES
+1. How we get Canvas data today
+2. What the DAP is
+3. How AspirEDU uses it
+4. What it means for schools
+5. Setting it up
+6. Questions
+
+---
+
+## How we get Canvas data today
+
+- Every night we ask Canvas for each school's data
+- We use the **Canvas API** — one question at a time
+  - "Give me the courses" → "Give me this course's assignments" → "Give me the submissions for this assignment" …
+- Big schools mean **millions** of questions
+
+Note: Analogy: the API is like asking a librarian for books one at a time. It works, but it's slow when you need the whole library.
+
+--
+
+## The trouble with one-at-a-time
+
+- Canvas limits how fast we can ask (rate limits)
+- Submissions are the biggest and slowest piece
+- Large schools can take many hours every night
+- More load on the school's Canvas instance
+
+---
+
+## What is the DAP?
+
+**Data Access Platform** — Instructure's service for bulk Canvas data
+(the engine behind **Canvas Data 2**)
+
+- Instead of many small questions, we ask for a **whole table** at once
+- Instructure prepares the file and we download it
+- Separate from Canvas itself — no load on the school's Canvas
+
+Note: Docs: https://developerdocs.instructure.com/services/dap
+
+--
+
+## API vs. DAP
+
+| | Canvas API | DAP |
+|---|---|---|
+| Shape | One record / page at a time | Whole table as files |
+| Speed for big data | Slow | Fast |
+| Freshness | Live | Updated every few hours |
+| Setup | API token / developer key | DAP client ID + secret |
+
+--
+
+## "Only what changed"
+
+- The first request gets **everything** (a snapshot)
+- After that we say: *"give me what changed **since** last time"*
+- We remember the timestamp for each table
+- Nightly downloads stay small, even at large schools
+
+---
+
+## What we pull from the DAP
+
+| Canvas data | DAP tables |
+|---|---|
+| **Submissions** | `submissions`, `submission_comments` |
+| **Communication channels** (emails, SMS) | `communication_channels` |
+| **Groups & differentiation tags** | `group_categories`, `groups`, `group_memberships` |
+
+Everything else still comes from the Canvas API.
+
+Note: Each of these can be turned on independently per school. When a table is on, we skip fetching that data from the API.
+
+--
+
+## Where it fits in the nightly capture
+
+1. Capture courses, users, enrollments, assignments (API)
+2. Capture admins, observers, events, … (API)
+3. **DAP step** — download and process enabled tables
+4. Capture finishes, reports update
+
+The DAP runs **last** so it can match its rows to every course we just captured.
+
+---
+
+## Under the hood (in plain terms)
+
+1. **Ask** Instructure for a table's changes since last time
+2. **Wait** while they build the files (we check every 10 seconds)
+3. **Download** the files
+4. **Match** each row to our courses, users, and assignments
+5. **Save** only what actually changed
+6. **Recalculate** affected students' grades and activity
+
+--
+
+## Built for big tables
+
+- Rows are handled in batches of **1,000**
+- Progress is saved (checkpointed) along the way
+- If time runs out, the job **hands off** and picks up where it left off
+- Rows that fail are set aside and retried on the next capture
+- After 3 tries with no progress, it stops and alerts us
+
+Note: A single submissions table at a large school can take hours. The checkpoint/resume design means a long table survives our task time limits without starting over.
+
+---
+
+## What it means for schools
+
+- ⏱ Faster nightly captures, especially for large institutions
+- 📉 Less load on their Canvas instance
+- ✅ Same data in AspirEDU reports — just delivered differently
+- 🔁 Fewer failed or partial captures
+
+---
+
+## Setting it up
+
+1. School's Canvas admin creates **DAP credentials**
+   (Admin → Data Services / Instructure Identity Services)
+2. They share the **Client ID** and **Client Secret** with us
+3. We enter them on the school's **Canvas DAP Config**
+4. Credentials are **tested automatically** when saved
+5. We enable the tables we want
+
+Note: The automatic test checks access to each table, so a typo or missing permission shows up in the admin right away instead of failing on the next nightly capture.
+
+--
+
+## Admin tools
+
+- Test credentials for selected schools
+- Enable / disable all DAP tables at once
+- Force a full re-download on the next capture
+- Run history: what ran, how long, how many rows
+
+---
+
+## Things to know
+
+- DAP data can be a few hours behind live Canvas
+- Credentials belong to the school — if they're rotated, we need the new ones
+- First capture after enabling is the largest
+- API is still used for everything not listed
+
+---
+
+## Questions?
+
+**Learn more**
+- Instructure DAP docs: developerdocs.instructure.com/services/dap
+- Internal: *Canvas DAP Flow* (AspirEDU docs)
 					</textarea>
 				</section>
 			</div>
