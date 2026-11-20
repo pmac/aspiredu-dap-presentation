@@ -71,7 +71,7 @@ Note: Analogy: the API is like asking a librarian for books one at a time. It wo
 **Data Access Platform** — Instructure's service for bulk Canvas data
 (the engine behind **Canvas Data 2**)
 
-- Instead of many small questions, we ask for a **whole table** at once
+- Instead of many small questions, we ask for changes from a **whole table** at once
 - Instructure prepares the file and we download it
 - Separate from Canvas itself — no load on the school's Canvas
 
@@ -93,8 +93,10 @@ Note: Docs: https://developerdocs.instructure.com/services/dap
 ## "Only what changed"
 
 - The first request gets **everything** (a snapshot)
-  - We only do this if we really need to
+  - We only do this if we really need too
+  - We normally rely on our normal retrieval w/o DAP
 - After that we say: *"give me what changed **since** last time"*
+  - Where "last time" is either the previous DAP run or the start time from the last retrieval
 - We remember the timestamp for each table
 - Nightly downloads stay small, even at large schools
 
@@ -183,7 +185,7 @@ Note: The automatic test checks access to each table, so a typo or missing permi
 - Test credentials for selected schools
 - Enable / disable all DAP tables at once
 - Set the next retrieval to be "with force"
-  - Disable the DAP for the run and fetching all data
+  - Disable the DAP for the run and fetch all data
 
 ![DAP Admin](img/dap-admin-screenshot.png)
 
