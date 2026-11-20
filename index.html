@@ -152,7 +152,7 @@ Note: A single submissions table at a large school can take hours. The checkpoin
 
 ## What it means for schools
 
-- ⏱ Faster nightly captures, especially for large institutions
+- 🚀 Faster nightly captures, especially for large institutions
 - 📉 Less load on their Canvas instance
 - ✅ Same data in AspirEDU reports — just delivered differently
 - 🔁 Fewer failed or partial captures
@@ -161,7 +161,7 @@ Note: A single submissions table at a large school can take hours. The checkpoin
 
 ## What it means for us
 
-![MONEY](/img/scrooge-mcduck.gif)
+![MONEY](img/scrooge-mcduck.gif)
 
 ---
 
@@ -182,8 +182,18 @@ Note: The automatic test checks access to each table, so a typo or missing permi
 
 - Test credentials for selected schools
 - Enable / disable all DAP tables at once
-- Force a full re-download on the next capture
-- Run history: what ran, how long, how many rows
+- Set the next retrieval to be "with force"
+  - Disable the DAP for the run and fetching all data
+
+![DAP Admin](img/dap-admin-screenshot.png)
+
+--
+
+## Run history
+
+What ran, how long, how many rows
+
+![DAP Stats](img/retrieval-dap-admin-screenshot.png)
 
 ---
 
@@ -191,7 +201,7 @@ Note: The automatic test checks access to each table, so a typo or missing permi
 
 - DAP data can be a few hours behind live Canvas
 - Credentials belong to the school — if they're rotated, we need the new ones
-- First capture after enabling is the largest
+- If this is the first capture DAP should be disabled
 - API is still used for everything not listed
 
 ---
